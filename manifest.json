@@ -1,9 +1,9 @@
 {
-  "name": "google-tag-manager",
-  "vendor": "vtex",
-  "version": "3.5.4",
-  "title": "Google Tag Manager",
-  "description": "Google Tag Manager",
+  "name": "google-tag-manager-enhanced",
+  "vendor": "wedigi",
+  "version": "1.0.1",
+  "title": "Google Tag Manager Enhanced",
+  "description": "Google Tag Manager Enhanced with 1st party data features",
   "mustUpdateAt": "2019-04-03",
   "scripts": {
     "postreleasy": "vtex publish --verbose"
@@ -18,21 +18,50 @@
     ]
   },
   "builders": {
+    "node": "6.x",
     "react": "3.x",
     "store": "0.x",
     "pixel": "0.x",
-    "docs": "0.x"
+    "docs": "0.x",
+    "checkout-ui-custom": "0.x"
   },
   "dependencies": {
     "vtex.pixel-interfaces": "1.x"
   },
   "policies": [
     {
-      "name": "pixel"
+      "name": "ADMIN_DS"
+    },
+    {
+      "name": "POWER_USER_DS"
+    },
+    {
+      "name": "LogisticsAdmin"
+    },
+    {
+      "name": "Get_Account_By_Identifier"
+    },
+    {
+      "name": "ManageStore"
+    },
+    {
+      "name": "OMSViewer"
+    },
+    {
+      "name": "colossus-fire-event"
+    },
+    {
+      "name": "colossus-write-logs"
+    },
+    {
+      "name": "ViewPayments"
+    },
+    {
+      "name": "vbase-read-write"
     }
   ],
   "settingsSchema": {
-    "title": "Google Tag Manager",
+    "title": "Google Tag Manager Enhanced",
     "type": "object",
     "bindingBounded": true,
     "properties": {
@@ -50,6 +79,11 @@
         "title": "Send Google Analytics 4 Events",
         "description": "When this setting is active, also send the GA4 version of the events",
         "type": "boolean"
+      },
+      "transportUrl": {
+        "title": "Transport URL",
+        "description": "Enter the Transport URL for container. Used for Custom Domain (without https://)",
+        "type": "string"
       }
     }
   },
