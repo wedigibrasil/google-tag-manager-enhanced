@@ -1,7 +1,7 @@
 {
   "name": "google-tag-manager-enhanced",
   "vendor": "wedigi",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "title": "Google Tag Manager Enhanced",
   "description": "Google Tag Manager Enhanced with 1st party data features",
   "mustUpdateAt": "2019-04-03",
@@ -58,6 +58,30 @@
     },
     {
       "name": "vbase-read-write"
+    },
+    {
+      "name": "SaveOrderFormConfiguration"
+    },
+    {
+      "name": "outbound-access",
+      "attrs": {
+        "host": "portal.vtexcommercestable.com.br",
+        "path": "/api/*"
+      }
+    },
+    {
+      "name": "outbound-access",
+      "attrs": {
+        "host": "api.trasty.io",
+        "path": "*"
+      }
+    },
+    {
+      "name": "outbound-access",
+      "attrs": {
+        "host": "api.trasty.io",
+        "path": "/*"
+      }
     }
   ],
   "settingsSchema": {
@@ -84,6 +108,21 @@
         "title": "Transport URL",
         "description": "Enter the Transport URL for container. Used for Custom Domain (without https://)",
         "type": "string"
+      },
+      "ga4PropertyId": {
+        "title": "Metric ID",
+        "description": "Enter the GA4 Metric ID",
+        "type": "string"
+      },
+      "ga4MeasurementProtocolAPI": {
+        "title": "Measurement Protocol App Key",
+        "description": "Enter the GA4 Measurement Protocol App Key",
+        "type": "string"
+      },
+      "sendOrderPlacedOnServerSide": {
+        "title": "Allow send Order Placed by Server Side",
+        "description": "Remember to remove GA4 purchase conversions on GTM Web",
+        "type": "boolean"
       }
     }
   },
