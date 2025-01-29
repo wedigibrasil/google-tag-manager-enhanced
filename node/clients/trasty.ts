@@ -78,12 +78,20 @@ export class TrastyApi extends ExternalClient {
       items,
     };
 
+    const ecommerceDatetime = orderDetail.creationDate;
+    // Criando um objeto Date com o timestamp atual
+    const date = new Date(ecommerceDatetime);
+    // Ajustando para GMT+3 (Brasília)
+    const adjustedDate = new Date(date.getTime() - (3 * 60 * 60 * 1000));
+    // Formatando a data para o formato desejado
+    const formattedDatetime = adjustedDate.toISOString();
+
     const payloadBody = {
       ecommerce_event_id : 0,
       client_id: ga4ClientId,
       platform: "VTEX",
       domain_url: domainUrl,
-      timestamp: orderDetail.creationDate,
+      timestamp: formattedDatetime,
       ga4_measurement_id: ga4MeasurementId,
       ga4_api_secret: ga4ApiSecret,
       events: [{
