@@ -1,5 +1,5 @@
-import { OrderDetailResponse, CustomApps } from "@vtex/clients"
-import { IAppSettings } from "../@types/types"
+import { CustomApps } from "@vtex/clients"
+import { EnchancedOrderDetailResponse, IAppSettings } from "../@types/types"
 
 import { createPublicKey, publicEncrypt, constants } from "crypto"
 
@@ -7,7 +7,7 @@ import { createPublicKey, publicEncrypt, constants } from "crypto"
 export async function onPaymentApproved(ctx: OrderStatusChangeContext, next: () => Promise<any>) {
 
   const {
-    clients: {OMS, apps, TrastyApi},
+    clients: {OMSEnhanced, apps, TrastyApi},
     vtex: {logger}
   } = ctx
 
@@ -30,7 +30,7 @@ export async function onPaymentApproved(ctx: OrderStatusChangeContext, next: () 
     logger.debug(ctx.body)
 
     const orderId = ctx.body.orderId
-    const orderDetail: OrderDetailResponse = await OMS.order(orderId)
+    const orderDetail: EnchancedOrderDetailResponse = await OMSEnhanced.orderFull(orderId)
 
     // Log do Detalhe do Pedido
     console.log(orderDetail)

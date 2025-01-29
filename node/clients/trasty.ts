@@ -1,7 +1,7 @@
 import type { IOContext } from '@vtex/api'
 import { ExternalClient } from '@vtex/api'
 
-import { OrderDetailResponse } from '@vtex/clients'
+import { EnchancedOrderDetailResponse } from '../@types/types'
 
 const routes = {
   ecommerceTrackPurchase: () => `/v1/ecommerce/track/purchase`
@@ -13,12 +13,24 @@ export class TrastyApi extends ExternalClient {
   }
 
   public async ecommerceTrackPurchase(ga4ClientId: string, ga4SessionID: string, domainUrl: string, ga4MeasurementId: string,
-    ga4ApiSecret: string, orderDetail: OrderDetailResponse) {
+    ga4ApiSecret: string, orderDetail: EnchancedOrderDetailResponse) {
 
     // Construir os itens do pedido com base no orderDetail
     const items = orderDetail.items.map((item) => {
 
       let priceFormatted = item.price / 100
+
+      // Extraindo as categorias conforme a ordem especificada em categoriesIds
+      const categoryIds = item.additionalInfo.categoriesIds
+      .split("/")
+      .filter((id) => id.trim() !== "");
+
+      const categoriesMap = new Map(
+        item.additionalInfo.categories.map((cat) => [String(cat.id), cat.name])
+      );
+
+      // Mapeando as categorias disponíveis para os campos correspondentes mantendo a ordem de categoriesIds
+      const mappedCategories = categoryIds.map((id) => categoriesMap.get(id) || "");
 
       return {
         item_id: item.productId, // Substitua pelo campo correspondente em orderDetail
@@ -27,7 +39,11 @@ export class TrastyApi extends ExternalClient {
         quantity: item.quantity, // Substitua pelo campo correspondente em orderDetail
         currency: "BRL", // Assumindo que o currency está em orderDetail
         item_brand: item.additionalInfo.brandName, // Substitua pelo campo correspondente, se existir
-        item_category: "", // Substitua pelo campo correspondente, se existir,
+        item_category: mappedCategories[0] || undefined,
+        item_category2: mappedCategories[1] || undefined,
+        item_category3: mappedCategories[2] || undefined,
+        item_category4: mappedCategories[3] || undefined,
+        item_category5: mappedCategories[4] || undefined,
         item_variant: item.id,
         discount: 0, // Desconto, se aplicável
       }

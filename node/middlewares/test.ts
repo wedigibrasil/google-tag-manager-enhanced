@@ -1,5 +1,5 @@
-import { OrderDetailResponse, CustomApps } from "@vtex/clients"
-import { IAppSettings } from "../@types/types"
+import { CustomApps } from "@vtex/clients"
+import { EnchancedOrderDetailResponse, IAppSettings } from "../@types/types"
 
 import { createPublicKey, publicEncrypt, constants } from "crypto"
 
@@ -7,7 +7,7 @@ import { createPublicKey, publicEncrypt, constants } from "crypto"
 export async function onTest(ctx: Context, next: () => Promise<any>) {
 
   const {
-    clients: {OMS, apps, TrastyApi}
+    clients: {OMSEnhanced, apps, TrastyApi}
   } = ctx
 
   // Pega as informações do App
@@ -25,11 +25,12 @@ export async function onTest(ctx: Context, next: () => Promise<any>) {
         }
 
 
-    const orderId = "1503540505370-01"
-    const orderDetail: OrderDetailResponse = await OMS.order(orderId)
+    const orderId = "1506810592915-01"
+    const orderDetail: EnchancedOrderDetailResponse = await OMSEnhanced.orderFull(orderId)
 
     // Log do Detalhe do Pedido
     console.log(orderDetail)
+    console.log(orderDetail.items[0].additionalInfo)
 
     const orderCustomData = orderDetail.customData
 
