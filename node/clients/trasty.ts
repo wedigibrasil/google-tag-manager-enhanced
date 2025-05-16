@@ -104,7 +104,7 @@ export class TrastyApi extends ExternalClient {
 
     const callUrl = routes.ecommerceTrackPurchase()
 
-    return this.http.post(callUrl,payloadBody)
+    return await this.http.post(callUrl,payloadBody)
 
   }
 
