@@ -9,7 +9,7 @@ const routes = {
 
 export class TrastyApi extends ExternalClient {
   constructor(context: IOContext) {
-    super('https://api.trasty.io', context, {timeout: 30000})
+    super('https://api.trasty.io', context, {timeout: 100000,  retries: 0, concurrency: 0})
   }
 
   public async ecommerceTrackPurchase(ga4ClientId: string, ga4SessionID: string, domainUrl: string, ga4MeasurementId: string,
