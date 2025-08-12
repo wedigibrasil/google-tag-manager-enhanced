@@ -90,6 +90,7 @@ export class TrastyApi extends ExternalClient {
       ecommerce_event_id : 0,
       client_id: ga4ClientId,
       platform: "VTEX",
+      client_profile : orderDetail.clientProfileData,
       domain_url: domainUrl,
       timestamp: formattedDatetime,
       ga4_measurement_id: ga4MeasurementId,
@@ -103,9 +104,7 @@ export class TrastyApi extends ExternalClient {
     console.log(payloadBody)
 
     const callUrl = routes.ecommerceTrackPurchase()
-
     return await this.http.post(callUrl,payloadBody)
-
   }
 
   public async testApi()

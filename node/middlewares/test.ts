@@ -48,14 +48,14 @@ export async function onTest(ctx: Context, next: () => Promise<any>) {
                       const ga4MeasurementAppSecret = appSettings.ga4MeasurementProtocolAPI
                       const ga4SessionId = element.fields?.ga4sessionid
 
-                      let splitCookieValue = ''
-                      let sessionNumber = ''
+                      //let splitCookieValue = ''
+                      //let sessionNumber = ''
 
-                      if (ga4SessionId.trim().length > 0)
-                      {
-                        splitCookieValue = ga4SessionId.split('.');
-                        sessionNumber = splitCookieValue[2];
-                      }
+                      //if (ga4SessionId.trim().length > 0)
+                      //{
+                        //splitCookieValue = ga4SessionId.split('.');
+                        //sessionNumber = splitCookieValue[2];
+                      //}
 
                       // Pega a chave de API
                       const secret = ga4MeasurementAppSecret// "8REzfa7fT2ibChSPtRttyQ"
@@ -81,7 +81,7 @@ ewIDAQAB
 
                       try
                       {
-                        const resp2 = await TrastyApi.ecommerceTrackPurchase(ga4clientid, sessionNumber, domain_url, ga4MeasurementId, encrypted.toString('base64'), orderDetail)
+                        const resp2 = await TrastyApi.ecommerceTrackPurchase(ga4clientid, ga4SessionId, domain_url, ga4MeasurementId, encrypted.toString('base64'), orderDetail)
                         console.log(resp2)
                       }
                       catch (error)

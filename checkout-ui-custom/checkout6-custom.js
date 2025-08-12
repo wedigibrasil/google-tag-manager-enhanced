@@ -17,7 +17,7 @@ const wdhGoogleTagManagerEnhanced = {
       ga4MeasurementID: '',
   },
   init: function() {
-    console.log('Google Tag Manager Enhanced Init - v.1.1.0 - 03/01/25 16:27...');
+    console.log('Google Tag Manager Enhanced Init - v.1.1.7');
     this.setupLoadAppSettings();
   },
   setupLoadAppSettings : function ()
@@ -59,11 +59,22 @@ const wdhGoogleTagManagerEnhanced = {
         var value = splitCookie[1];
         cookie[key] = value;
     });
-    ga4ClientID = cookie["_ga"].substring(6);
+
+    if (cookie["_ga"]) {
+      ga4ClientID = cookie["_ga"].substring(6) || '';
+    }
+    else {
+      ga4ClientID = '---';
+    }
 
     const formatedGtmID = this.settings.ga4MeasurementID.replace('G-','');
     const cookieKey = '_ga_' + formatedGtmID;
-    const gaCookieValue = cookie[cookieKey];
+
+    var gaCookieValue = '';
+    if (cookie[cookieKey])
+      gaCookieValue = (cookie[cookieKey]);
+    else
+      gaCookieValue = '---';
 
     console.log('Trasty Data: GA4 Client ID - ', ga4ClientID);
     console.log('Trasty Data: GA4 Cookie Session - ', gaCookieValue);
