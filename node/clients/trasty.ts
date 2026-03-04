@@ -13,7 +13,7 @@ export class TrastyApi extends ExternalClient {
   }
 
   public async ecommerceTrackPurchase(ga4ClientId: string, ga4SessionID: string, domainUrl: string, ga4MeasurementId: string,
-    ga4ApiSecret: string, orderDetail: EnchancedOrderDetailResponse) {
+    ga4ApiSecret: string, metaFBP: string, metaFBC: string, orderDetail: EnchancedOrderDetailResponse) {
 
     // Construir os itens do pedido com base no orderDetail
     const items = orderDetail.items.map((item) => {
@@ -95,6 +95,8 @@ export class TrastyApi extends ExternalClient {
       timestamp: formattedDatetime,
       ga4_measurement_id: ga4MeasurementId,
       ga4_api_secret: ga4ApiSecret,
+      fbp: metaFBP,
+      fbc: metaFBC,
       events: [{
         name: "purchase",
         params

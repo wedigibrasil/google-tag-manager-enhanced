@@ -76,14 +76,23 @@ const wdhGoogleTagManagerEnhanced = {
     else
       gaCookieValue = '---';
 
+    // --- LÓGICA DO FACEBOOK (_FBP e _FBC) ---
+    var fbpValue = cookie['_fbp'] || '---';
+    var fbcValue = cookie['_fbc'] || '---';
+
     console.log('Trasty Data: GA4 Client ID - ', ga4ClientID);
     console.log('Trasty Data: GA4 Cookie Session - ', gaCookieValue);
+    console.log('Trasty Data: FBP - ', fbpValue);
+    console.log('Trasty Data: FBC - ', fbcValue);
+
 
     if (ga4ClientID)
     {
         var orderFormAppPayload = {
           'ga4clientid':  ga4ClientID,
-          'ga4sessionid':  gaCookieValue
+          'ga4sessionid':  gaCookieValue,
+          'fbp': fbpValue,
+          'fbc': fbcValue
         };
 
         fetch('/api/checkout/pub/orderForm/' + orderFormID + '/customData/trasty-data', {

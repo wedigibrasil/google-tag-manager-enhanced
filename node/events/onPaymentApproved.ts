@@ -51,6 +51,8 @@ export async function onPaymentApproved(ctx: OrderStatusChangeContext, next: () 
                       const ga4MeasurementId = appSettings.ga4PropertyId
                       const ga4MeasurementAppSecret = appSettings.ga4MeasurementProtocolAPI
                       const ga4SessionId = element.fields?.ga4sessionid
+                      const _fbp = element.fields?.fbp || '---'
+                      const _fbc = element.fields?.fbc || '---'
 
                       //let splitCookieValue = ''
                       //let sessionNumber = ''
@@ -83,7 +85,7 @@ ewIDAQAB
                           Buffer.from(secret)
                       );
 
-                      const resp = await TrastyApi.ecommerceTrackPurchase(ga4clientid, ga4SessionId, domain_url, ga4MeasurementId, encrypted.toString('base64'), orderDetail)
+                      const resp = await TrastyApi.ecommerceTrackPurchase(ga4clientid, ga4SessionId, domain_url, ga4MeasurementId, encrypted.toString('base64'), _fbp, _fbc, orderDetail)
 
                       logger.info(resp)
                       console.log(resp)

@@ -47,6 +47,8 @@ export async function onTest(ctx: Context, next: () => Promise<any>) {
                       const ga4MeasurementId = appSettings.ga4PropertyId
                       const ga4MeasurementAppSecret = appSettings.ga4MeasurementProtocolAPI
                       const ga4SessionId = element.fields?.ga4sessionid
+                      const _fbp = element.fields?.fbp || '---'
+                      const _fbc = element.fields?.fbc || '---'
 
                       //let splitCookieValue = ''
                       //let sessionNumber = ''
@@ -81,7 +83,7 @@ ewIDAQAB
 
                       try
                       {
-                        const resp2 = await TrastyApi.ecommerceTrackPurchase(ga4clientid, ga4SessionId, domain_url, ga4MeasurementId, encrypted.toString('base64'), orderDetail)
+                        const resp2 = await TrastyApi.ecommerceTrackPurchase(ga4clientid, ga4SessionId, domain_url, ga4MeasurementId, encrypted.toString('base64'), _fbp, _fbc, orderDetail)
                         console.log(resp2)
                       }
                       catch (error)
