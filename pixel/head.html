@@ -3,10 +3,161 @@
     var gtmId = "{{settings.gtmId}}";
     var sendGA4EventsValue = "{{settings.sendGA4Events}}"
     var sendGA4Events = sendGA4EventsValue == 'true'
+    var sessionStorageKey = "__pixel_session_id__";
+
+    function safeParseUrl(url) {
+      if (!url) return null;
+
+      try {
+        return new URL(url, window.location.href);
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function getReferrerInfo(referrerUrl) {
+      var referrerHost = referrerUrl && referrerUrl.hostname ? referrerUrl.hostname.replace(/^www\./, '') : '';
+
+      return {
+        url: document.referrer || null,
+        host: referrerHost || null
+      };
+    }
+
+    function detectDeviceType() {
+      var userAgent = navigator.userAgent || '';
+      var hasTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+
+      if (/tablet|ipad/i.test(userAgent) || (hasTouch && window.innerWidth >= 768 && window.innerWidth <= 1366)) {
+        return 'tablet';
+      }
+
+      if (/mobi|android|iphone|ipod/i.test(userAgent) || (hasTouch && window.innerWidth < 768)) {
+        return 'mobile';
+      }
+
+      return 'desktop';
+    }
+
+    function generateSessionId() {
+      var value = 's_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+      return value;
+    }
+
+    function getSessionId() {
+      try {
+        var existingSessionId = window.sessionStorage.getItem(sessionStorageKey);
+        if (existingSessionId) return existingSessionId;
+
+        var nextSessionId = generateSessionId();
+        window.sessionStorage.setItem(sessionStorageKey, nextSessionId);
+        return nextSessionId;
+      } catch (error) {
+        return generateSessionId();
+      }
+    }
+
+    function buildNavigationPayload() {
+      var currentUrl = new URL(window.location.href);
+      var referrerUrl = safeParseUrl(document.referrer);
+      var searchParams = currentUrl.searchParams;
+      var referrerInfo = getReferrerInfo(referrerUrl);
+      var navEntry = window.performance && performance.getEntriesByType ? performance.getEntriesByType('navigation')[0] : null;
+      var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      var userAgentData = navigator.userAgentData || null;
+
+      return {
+        timestamp: new Date().toISOString(),
+        sessionId: getSessionId(),
+        page: {
+          title: document.title || null,
+          url: currentUrl.href,
+          host: currentUrl.hostname || null,
+          path: currentUrl.pathname,
+          query: currentUrl.search || null,
+          hash: currentUrl.hash || null
+        },
+        acquisition: {
+          referrer: referrerInfo.url,
+          referrerHost: referrerInfo.host,
+          landingParams: {
+            utm_source: searchParams.get('utm_source'),
+            utm_medium: searchParams.get('utm_medium'),
+            utm_campaign: searchParams.get('utm_campaign'),
+            utm_id: searchParams.get('utm_id'),
+            utm_term: searchParams.get('utm_term'),
+            utm_content: searchParams.get('utm_content'),
+            gclid: searchParams.get('gclid'),
+            fbclid: searchParams.get('fbclid'),
+            msclkid: searchParams.get('msclkid'),
+            ttclid: searchParams.get('ttclid'),
+            twclid: searchParams.get('twclid')
+          }
+        },
+        device: {
+          type: detectDeviceType(),
+          platform: navigator.platform || null,
+          vendor: navigator.vendor || null,
+          userAgent: navigator.userAgent || null,
+          userAgentData: userAgentData ? {
+            mobile: userAgentData.mobile,
+            brands: userAgentData.brands || null,
+            platform: userAgentData.platform || null
+          } : null,
+          language: navigator.language || null,
+          languages: navigator.languages || null,
+          cookieEnabled: navigator.cookieEnabled,
+          doNotTrack: navigator.doNotTrack || null,
+          maxTouchPoints: navigator.maxTouchPoints || 0,
+          hardwareConcurrency: navigator.hardwareConcurrency || null,
+          deviceMemory: navigator.deviceMemory || null
+        },
+        screen: {
+          viewportWidth: window.innerWidth,
+          viewportHeight: window.innerHeight,
+          layoutWidth: document.documentElement.clientWidth,
+          layoutHeight: document.documentElement.clientHeight,
+          screenWidth: window.screen.width,
+          screenHeight: window.screen.height,
+          availableWidth: window.screen.availWidth,
+          availableHeight: window.screen.availHeight,
+          colorDepth: window.screen.colorDepth,
+          pixelDepth: window.screen.pixelDepth,
+          pixelRatio: window.devicePixelRatio || 1,
+          orientation: window.screen.orientation ? window.screen.orientation.type : null
+        },
+        browser: {
+          online: navigator.onLine,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+          historyLength: window.history.length,
+          documentVisibility: document.visibilityState,
+          navigationType: navEntry ? navEntry.type : null,
+          redirectCount: navEntry ? navEntry.redirectCount : null
+        },
+        network: connection ? {
+          effectiveType: connection.effectiveType || null,
+          downlink: connection.downlink || null,
+          rtt: connection.rtt || null,
+          saveData: connection.saveData || false
+        } : null
+      };
+    }
+
+    function exposeNavigationPayload() {
+      try {
+        var payload = buildNavigationPayload();
+
+        window.__pixelNavigationPayload__ = payload;
+      } catch (error) {
+        console.warn('[Pixel] Failed to build navigation payload.', error);
+      }
+    }
 
     window.__gtm__ = {
       sendGA4Events
     }
+
+    exposeNavigationPayload();
 
     if (!gtmId) {
       console.error('Warning: No Google Tag Manager ID is defined. Please configure it in the apps admin.');
@@ -20,5 +171,5 @@
       'https://{{settings.transportUrl}}/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
       })(window,document,'script','dataLayer',gtmId)
     }
-  })()
+  })();
 </script>

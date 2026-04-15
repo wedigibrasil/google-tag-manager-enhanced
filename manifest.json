@@ -1,7 +1,7 @@
 {
   "name": "google-tag-manager-enhanced",
   "vendor": "wedigi",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "title": "Google Tag Manager Enhanced",
   "description": "Google Tag Manager Enhanced with 1st party data features",
   "mustUpdateAt": "2019-04-03",
@@ -123,6 +123,28 @@
         "title": "Allow send Order Placed by Server Side",
         "description": "Remember to remove GA4 purchase conversions on GTM Web",
         "type": "boolean"
+      },
+      "enableCheckoutTracking": {
+        "title": "Enable Checkout Tracking",
+        "description": "Enable or disable checkout tracking",
+        "type": "boolean"
+      },
+      "apiKey": {
+        "title": "API Key",
+        "description": "Chave de API do painel Trasty (ex: pk_live_abc123)",
+        "type": "string"
+      },
+      "apiUrl": {
+        "title": "API URL (opcional)",
+        "description": "URL base da API Trasty. Padrão: https://pipeline.trasty.io",
+        "type": "string",
+        "default": "https://pipeline.trasty.io"
+      },
+      "trackerUrl": {
+        "title": "Tracker Script URL (opcional)",
+        "description": "URL do script trasty.js. Padrão: https://cdn.trasty.io/tracker/trasty.js",
+        "type": "string",
+        "default": "https://cdn.trasty.io/tracker/trasty.js"
       }
     }
   },
