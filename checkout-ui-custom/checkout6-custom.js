@@ -54,7 +54,17 @@
     }
   }
 
-  function buildNavigationPayload() {
+  function getStoredOrderform() {
+    try {
+      if (!window.vtexjs || !window.vtexjs.checkout) return null
+
+      return window.vtexjs.checkout.orderForm || null
+    } catch (error) {
+      return null
+    }
+  }
+
+  function buildNavigationPayload(orderformOverride) {
     var currentUrl = new URL(window.location.href)
     var referrerUrl = safeParseUrl(document.referrer)
     var searchParams = currentUrl.searchParams
@@ -62,11 +72,13 @@
     var navEntry = window.performance && performance.getEntriesByType ? performance.getEntriesByType('navigation')[0] : null
     var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection
     var userAgentData = navigator.userAgentData || null
+    var orderform = typeof orderformOverride !== 'undefined' ? orderformOverride : getStoredOrderform()
 
     return {
       timestamp: new Date().toISOString(),
       sessionId: getSessionId(),
       context: 'checkout',
+      orderform: orderform,
       page: {
         title: document.title || null,
         url: currentUrl.href,
@@ -141,12 +153,44 @@
     }
   }
 
-  try {
-    window.__pixelNavigationPayload__ = buildNavigationPayload()
-  } catch (error) {
-    if (typeof console !== 'undefined' && console.warn) {
-      console.warn('[Pixel] Failed to build checkout navigation payload.', error)
+  function exposeNavigationPayload(orderformOverride) {
+    try {
+      window.__pixelNavigationPayload__ = buildNavigationPayload(orderformOverride)
+    } catch (error) {
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[Pixel] Failed to build checkout navigation payload.', error)
+      }
     }
+  }
+
+  exposeNavigationPayload()
+
+  var orderformRetryCount = 0
+  var orderformRetryLimit = 10
+  var orderformRetryDelayMs = 300
+
+  function retryExposeNavigationPayload() {
+    if (getStoredOrderform() || orderformRetryCount >= orderformRetryLimit) return
+
+    orderformRetryCount += 1
+
+    window.setTimeout(function () {
+      var orderform = getStoredOrderform()
+      if (orderform) {
+        exposeNavigationPayload(orderform)
+        return
+      }
+
+      retryExposeNavigationPayload()
+    }, orderformRetryDelayMs)
+  }
+
+  retryExposeNavigationPayload()
+
+  if (window.jQuery && window.jQuery.fn && window.jQuery(window).on) {
+    window.jQuery(window).on('orderFormUpdated.vtex.pixelNavigationPayload', function (evt, orderForm) {
+      exposeNavigationPayload(orderForm || getStoredOrderform())
+    })
   }
 })()
 
@@ -278,6 +322,7 @@ wdhGoogleTagManagerEnhanced.init();
   var _readyTimer = null
   var _depsResolved = false
   var _bootstrapStarted = false
+  var _journeyEventsRequestPatched = false
 
   function _log(level) {
     var args = Array.prototype.slice.call(arguments, 1)
@@ -324,9 +369,85 @@ wdhGoogleTagManagerEnhanced.init();
     } catch (_) {}
   }
 
+  function _isJourneyEventsUrl(url) {
+    return typeof url === 'string' && /\/v1\/journey\/events(?:\?|$)/.test(url)
+  }
+
+  function _cloneNavigationContext() {
+    var navigationContext = window.__pixelNavigationPayload__ || null
+    if (!navigationContext) return null
+
+    try {
+      return JSON.parse(JSON.stringify(navigationContext))
+    } catch (_) {
+      return navigationContext
+    }
+  }
+
+  function _augmentJourneyEventRequestBody(body) {
+    if (typeof body !== 'string' || !body) return body
+
+    try {
+      var parsed = JSON.parse(body)
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return body
+      if (parsed.navigation_context) return body
+
+      parsed.navigation_context = _cloneNavigationContext()
+
+      if (!parsed.navigation && parsed.navigation_context) {
+        parsed.navigation = parsed.navigation_context
+      }
+
+      return JSON.stringify(parsed)
+    } catch (_) {
+      return body
+    }
+  }
+
+  function _patchJourneyEventsRequests() {
+    if (_journeyEventsRequestPatched) return
+    _journeyEventsRequestPatched = true
+
+    if (typeof window.fetch === 'function') {
+      var originalFetch = window.fetch
+      window.fetch = function (input, init) {
+        var requestUrl = typeof input === 'string' ? input : (input && input.url) || ''
+
+        if (_isJourneyEventsUrl(requestUrl) && init && typeof init.body === 'string') {
+          init = Object.assign({}, init, {
+            body: _augmentJourneyEventRequestBody(init.body),
+          })
+        }
+
+        return originalFetch.call(this, input, init)
+      }
+    }
+
+    if (typeof window.XMLHttpRequest === 'function') {
+      var OriginalXHR = window.XMLHttpRequest
+      var originalOpen = OriginalXHR.prototype.open
+      var originalSend = OriginalXHR.prototype.send
+
+      OriginalXHR.prototype.open = function (method, url) {
+        this.__trastyJourneyEventsUrl = url
+        return originalOpen.apply(this, arguments)
+      }
+
+      OriginalXHR.prototype.send = function (body) {
+        if (_isJourneyEventsUrl(this.__trastyJourneyEventsUrl) && typeof body === 'string') {
+          body = _augmentJourneyEventRequestBody(body)
+        }
+
+        return originalSend.call(this, body)
+      }
+    }
+  }
+
   function _startTrackingBootstrap() {
     if (_bootstrapStarted) return
     _bootstrapStarted = true
+
+    _patchJourneyEventsRequests()
 
     _apiUrl = _normalizeUrl(_apiUrl, 'https://pipeline.trasty.io')
     _trackerUrl = _normalizeUrl(_trackerUrl, 'https://cdn.trasty.io/tracker/trasty.js')
@@ -583,8 +704,12 @@ wdhGoogleTagManagerEnhanced.init();
           }
           this.sentKeys[dedupeKey] = true
         }
-        trsty.track(eventName, data || {})
-        _logEvent(eventName, data || {})
+        var eventPayload = Object.assign({}, data || {}, {
+          navigation_context: window.__pixelNavigationPayload__ || null,
+        })
+
+        trsty.track(eventName, eventPayload)
+        _logEvent(eventName, eventPayload)
       },
 
       buildCart: function (of) {
