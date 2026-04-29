@@ -57,6 +57,17 @@
       }
     }
 
+    function getStoredOrderform() {
+      try {
+        var storedOrderform = window.localStorage.getItem('orderform');
+        if (!storedOrderform) return null;
+
+        return JSON.parse(storedOrderform);
+      } catch (error) {
+        return null;
+      }
+    }
+
     function buildNavigationPayload() {
       var currentUrl = new URL(window.location.href);
       var referrerUrl = safeParseUrl(document.referrer);
@@ -65,10 +76,12 @@
       var navEntry = window.performance && performance.getEntriesByType ? performance.getEntriesByType('navigation')[0] : null;
       var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
       var userAgentData = navigator.userAgentData || null;
+      var orderform = getStoredOrderform();
 
       return {
         timestamp: new Date().toISOString(),
         sessionId: getSessionId(),
+        orderform: orderform,
         page: {
           title: document.title || null,
           url: currentUrl.href,

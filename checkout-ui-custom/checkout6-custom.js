@@ -217,11 +217,14 @@ const wdhGoogleTagManagerEnhanced = {
       ga4ClientID = '---';
     }
 
-    const formatedGtmID = this.settings.ga4MeasurementID.replace('G-','');
-    const cookieKey = '_ga_' + formatedGtmID;
+    var ga4MeasurementID = typeof this.settings.ga4MeasurementID === 'string'
+      ? this.settings.ga4MeasurementID
+      : '';
+    var formatedGtmID = ga4MeasurementID.replace('G-', '');
+    var cookieKey = formatedGtmID ? '_ga_' + formatedGtmID : '';
 
     var gaCookieValue = '';
-    if (cookie[cookieKey])
+    if (cookieKey && cookie[cookieKey])
       gaCookieValue = (cookie[cookieKey]);
     else
       gaCookieValue = '---';
