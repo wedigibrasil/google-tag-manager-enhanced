@@ -197,61 +197,62 @@
 // BEGIN PLUGIN WE.DIGI HOUSE GOOGLE TAG MANAGER INTEGRATION
 var ga4ClientID = '';
 
-$(window).on('orderFormUpdated.vtex', function(evt, orderForm) {
+$(window).on('orderFormUpdated.vtex', function (evt, orderForm) {
 
   wdhGoogleTagManagerEnhanced.syncGA4ClientIDOnOrderForm(evt, orderForm);
 
 });
 const wdhGoogleTagManagerEnhanced = {
 
-  settings : {
-      gtmId : '',
-      transportURL: '',
-      gtmscript_url: '',
-      ga4MeasurementID: '',
+  settings: {
+    gtmId: '',
+    transportURL: '',
+    gtmscript_url: '',
+    ga4MeasurementID: '',
   },
-  init: function() {
-    console.log('Google Tag Manager Enhanced Init - v.1.1.7');
+  init: function () {
+    console.log('Google Tag Manager Enhanced Init - v.1.4.0');
     this.setupLoadAppSettings();
   },
-  setupLoadAppSettings : function ()
-  {
+  setupLoadAppSettings: function () {
     fetch('/_v/settings')
-    .then(response => response.json())
-    .then((json) => {
+      .then(response => response.json())
+      .then((json) => {
         console.log(json);
         this.settings.gtmId = json.gtmId;
         this.settings.transportURL = json.transportUrl;
         this.settings.ga4MeasurementID = json.ga4PropertyId;
         this.setupBuildGTMScriptURL();
         this.setupScriptInjection();
-    })
-    .catch(function(error) {
-      console.log(error);
-    });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   },
-  setupBuildGTMScriptURL: function() {
+  setupBuildGTMScriptURL: function () {
     this.settings.gtmscript_url = 'https://' + this.settings.transportURL + '/gtm.js?id=' + this.settings.gtmId;
   },
-  setupScriptInjection: function ()
-  {
+  setupScriptInjection: function () {
     window.dataLayer = window.dataLayer || [];
-    (function(w,d,s,l,i,tu){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://' + tu + '/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer',this.settings.gtmId,  this.settings.transportURL)
+    (function (w, d, s, l, i, tu) {
+      w[l] = w[l] || []; w[l].push({
+        'gtm.start':
+          new Date().getTime(), event: 'gtm.js'
+      }); var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+          'https://' + tu + '/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', this.settings.gtmId, this.settings.transportURL)
   },
-  syncGA4ClientIDOnOrderForm: function(evt, orderForm) {
+  syncGA4ClientIDOnOrderForm: function (evt, orderForm) {
 
     var orderFormID = orderForm.orderFormId;
 
     var cookie = {};
-    document.cookie.split(';').forEach(function(el) {
-        var splitCookie = el.split('=');
-        var key = splitCookie[0].trim();
-        var value = splitCookie[1];
-        cookie[key] = value;
+    document.cookie.split(';').forEach(function (el) {
+      var splitCookie = el.split('=');
+      var key = splitCookie[0].trim();
+      var value = splitCookie[1];
+      cookie[key] = value;
     });
 
     if (cookie["_ga"]) {
@@ -283,28 +284,27 @@ const wdhGoogleTagManagerEnhanced = {
     console.log('Trasty Data: FBC - ', fbcValue);
 
 
-    if (ga4ClientID)
-    {
-        var orderFormAppPayload = {
-          'ga4clientid':  ga4ClientID,
-          'ga4sessionid':  gaCookieValue,
-          'fbp': fbpValue,
-          'fbc': fbcValue
-        };
+    if (ga4ClientID) {
+      var orderFormAppPayload = {
+        'ga4clientid': ga4ClientID,
+        'ga4sessionid': gaCookieValue,
+        'fbp': fbpValue,
+        'fbc': fbcValue
+      };
 
-        fetch('/api/checkout/pub/orderForm/' + orderFormID + '/customData/trasty-data', {
-            "method": "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(orderFormAppPayload)
-            })
-            .then(response => {
-                console.log(response);
-            })
-            .catch(err => {
-                console.error(err);
-            });
+      fetch('/api/checkout/pub/orderForm/' + orderFormID + '/customData/trasty-data', {
+        "method": "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderFormAppPayload)
+      })
+        .then(response => {
+          console.log(response);
+        })
+        .catch(err => {
+          console.error(err);
+        });
     }
   }
 };
@@ -312,7 +312,7 @@ wdhGoogleTagManagerEnhanced.init();
 // END PLUGIN WE.DIGI HOUSE GOOGLE TAG MANAGER INTEGRATION
 
 // BEGIN TRASTY CHECKOUT INTEGRATION
-;(function () {
+; (function () {
   'use strict'
 
   var _apiKey = ''
@@ -347,7 +347,7 @@ wdhGoogleTagManagerEnhanced.init();
     var url = value || fallback
     try {
       if (/%[0-9A-Fa-f]{2}/.test(url)) url = decodeURIComponent(url)
-    } catch (_) {}
+    } catch (_) { }
     return url
   }
 
@@ -366,7 +366,7 @@ wdhGoogleTagManagerEnhanced.init();
       if (_apiKey) localStorage.setItem('trasty:apiKey', _apiKey)
       if (_apiUrl) localStorage.setItem('trasty:apiUrl', _apiUrl)
       localStorage.setItem('trasty:enableCheckoutTracking', _enableCheckoutTracking ? 'true' : 'false')
-    } catch (_) {}
+    } catch (_) { }
   }
 
   function _isJourneyEventsUrl(url) {
@@ -499,14 +499,14 @@ wdhGoogleTagManagerEnhanced.init();
   }
 
   try {
-    _apiKey    = localStorage.getItem('trasty:apiKey') || ''
-    _apiUrl    = localStorage.getItem('trasty:apiUrl') || _apiUrl
+    _apiKey = localStorage.getItem('trasty:apiKey') || ''
+    _apiUrl = localStorage.getItem('trasty:apiUrl') || _apiUrl
     _enableCheckoutTracking = localStorage.getItem('trasty:enableCheckoutTracking') === 'true'
-  } catch (_) {}
+  } catch (_) { }
 
   if (!_apiKey && window.TrastyConfig) {
-    _apiKey  = window.TrastyConfig.apiKey  || ''
-    _apiUrl  = window.TrastyConfig.apiUrl  || _apiUrl
+    _apiKey = window.TrastyConfig.apiKey || ''
+    _apiUrl = window.TrastyConfig.apiUrl || _apiUrl
   }
   if (window.TrastyConfig && typeof window.TrastyConfig.enableCheckoutTracking !== 'undefined') {
     _enableCheckoutTracking = window.TrastyConfig.enableCheckoutTracking === true
@@ -666,11 +666,11 @@ wdhGoogleTagManagerEnhanced.init();
             var value = line.slice(idx + 1).trim()
             responseHeaders[key] = value
           })
-        } catch (_) {}
+        } catch (_) { }
 
         try {
           headers = (settings && settings.headers) ? settings.headers : {}
-        } catch (_) {}
+        } catch (_) { }
 
         var requestId =
           responseHeaders['x-request-id'] ||
@@ -813,7 +813,7 @@ wdhGoogleTagManagerEnhanced.init();
           if (email) sessionStorage.setItem('_trasty_ck_email', this.lastKnownEmail)
           if (name) sessionStorage.setItem('_trasty_ck_name', this.lastKnownName)
           if (phone) sessionStorage.setItem('_trasty_ck_phone', this.lastKnownPhone)
-        } catch (_) {}
+        } catch (_) { }
       },
 
       hydrateIdentity: function () {
@@ -821,7 +821,7 @@ wdhGoogleTagManagerEnhanced.init();
           if (!this.lastKnownEmail) this.lastKnownEmail = sessionStorage.getItem('_trasty_ck_email') || ''
           if (!this.lastKnownName) this.lastKnownName = sessionStorage.getItem('_trasty_ck_name') || ''
           if (!this.lastKnownPhone) this.lastKnownPhone = sessionStorage.getItem('_trasty_ck_phone') || ''
-        } catch (_) {}
+        } catch (_) { }
       },
 
       getSessionEventKey: function (eventName, orderFormId) {
@@ -839,7 +839,7 @@ wdhGoogleTagManagerEnhanced.init();
       setSessionData: function (key, value) {
         try {
           sessionStorage.setItem(key, String(value || ''))
-        } catch (_) {}
+        } catch (_) { }
       },
 
       getSessionEventSignature: function (eventName, orderFormId) {
@@ -853,7 +853,7 @@ wdhGoogleTagManagerEnhanced.init();
       setSessionEventSignature: function (eventName, orderFormId, signature) {
         try {
           sessionStorage.setItem(this.getSessionEventKey(eventName, orderFormId), String(signature || ''))
-        } catch (_) {}
+        } catch (_) { }
       },
 
       shouldEmitBySignature: function (eventName, orderFormId, signature) {
@@ -1348,7 +1348,7 @@ wdhGoogleTagManagerEnhanced.init();
             try {
               var found = (root || document).querySelectorAll(selector)
               for (var i = 0; i < found.length; i++) nodes.push(found[i])
-            } catch (_) {}
+            } catch (_) { }
           })
           return nodes
         }

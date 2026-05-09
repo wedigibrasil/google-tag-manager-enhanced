@@ -7,7 +7,9 @@ export interface IAppSettings {
   transportUrl: string,
   ga4PropertyId: string,
   ga4MeasurementProtocolAPI: string,
-  sendOrderPlacedOnServerSide: boolean
+  sendOrderPlacedOnServerSide: boolean,
+  apiKey: string,
+  apiUrl: string
 }
 
 export interface EnhancedOrderDetailItemCategory {

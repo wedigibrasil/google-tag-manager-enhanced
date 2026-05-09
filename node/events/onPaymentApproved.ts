@@ -16,6 +16,12 @@ export async function onPaymentApproved(ctx: OrderStatusChangeContext, next: () 
     process.env.VTEX_APP_ID as string
   )
 
+  const orderId = ctx.body.orderId
+
+  // Carrega o orderDetail sempre — usado tanto pelo GA4 quanto pelo Trasty
+  const orderDetail: EnchancedOrderDetailResponse = await OMSEnhanced.orderFull(orderId)
+
+  // ── GA4 Server-Side Tracking (existente) ──
   if (appSettings.sendOrderPlacedOnServerSide)
   {
     // Verifica se as informações de Métrica e
@@ -28,9 +34,6 @@ export async function onPaymentApproved(ctx: OrderStatusChangeContext, next: () 
     // Log do status
     console.log(ctx.body)
     logger.debug(ctx.body)
-
-    const orderId = ctx.body.orderId
-    const orderDetail: EnchancedOrderDetailResponse = await OMSEnhanced.orderFull(orderId)
 
     // Log do Detalhe do Pedido
     console.log(orderDetail)
@@ -94,8 +97,30 @@ ewIDAQAB
               }
           })
       }
-
-    await next()
   }
+
+  // ── Trasty order_approved (independente do GA4) ──
+  try {
+    const trastyApiKey = appSettings.apiKey
+    const trastyApiUrl = appSettings.apiUrl || 'https://pipeline.trasty.io'
+
+    if (trastyApiKey && trastyApiKey.trim().length > 0) {
+      const trastyResp = await TrastyApi.sendOrderEvent({
+        apiKey: trastyApiKey,
+        apiUrl: trastyApiUrl,
+        eventName: 'order_approved',
+        orderDetail,
+      })
+      logger.info({ trastyOrderApproved: { orderId, status: 'sent', response: trastyResp } })
+    }
+  } catch (trastyError) {
+    if (trastyError?.response?.status === 409) {
+      logger.info({ trastyOrderApproved: { orderId, status: 'duplicate_skipped' } })
+    } else {
+      logger.warn({ trastyOrderApprovedError: { orderId, error: trastyError?.message } })
+    }
+  }
+
+  await next()
 
 }

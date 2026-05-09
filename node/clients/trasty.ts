@@ -113,4 +113,87 @@ export class TrastyApi extends ExternalClient {
   {
     return this.http.get("/hello")
   }
+
+  public async sendOrderEvent(params: {
+    apiKey: string
+    apiUrl: string
+    eventName: 'order_approved' | 'order_invoiced'
+    orderDetail: EnchancedOrderDetailResponse
+    invoiceData?: { invoiceNumber: string; invoiceKey?: string }
+  }) {
+    const { apiKey, apiUrl, eventName, orderDetail, invoiceData } = params
+
+    // Montar items do carrinho
+    const items = orderDetail.items.map((item) => {
+      const unitPrice = item.price / 100
+      return {
+        product_id: item.productId,
+        sku: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        unit_price: unitPrice,
+        total_price: unitPrice * item.quantity,
+      }
+    })
+
+    // Calcular total e shipping
+    const total = orderDetail.value / 100
+
+    let shipping = 0
+    if (
+      orderDetail.shippingData &&
+      orderDetail.shippingData.logisticsInfo &&
+      orderDetail.shippingData.logisticsInfo.length > 0 &&
+      orderDetail.shippingData.logisticsInfo[0].price > 0
+    ) {
+      shipping = orderDetail.shippingData.logisticsInfo[0].price / 100
+    }
+
+    // Montar customer
+    const clientProfile = orderDetail.clientProfileData as any
+    const customer: Record<string, string> = {}
+    if (clientProfile) {
+      if (clientProfile.email) customer.email = clientProfile.email
+      if (clientProfile.phone) customer.phone = clientProfile.phone
+      if (clientProfile.firstName || clientProfile.lastName) {
+        customer.name = [clientProfile.firstName, clientProfile.lastName].filter(Boolean).join(' ')
+      }
+      if (clientProfile.document) customer.document = clientProfile.document
+    }
+
+    // Montar payload base
+    const payload: Record<string, any> = {
+      schema_version: 1,
+      event_name: eventName,
+      order_id: orderDetail.orderId,
+      orderform_id: (orderDetail as any).orderFormId || undefined,
+      customer: Object.keys(customer).length > 0 ? customer : undefined,
+      cart: {
+        items,
+        items_count: items.length,
+        total,
+        shipping,
+      },
+    }
+
+    // Adicionar raw_meta para order_invoiced
+    if (eventName === 'order_invoiced' && invoiceData) {
+      payload.raw_meta = {
+        invoice_number: invoiceData.invoiceNumber,
+        invoice_key: invoiceData.invoiceKey || undefined,
+      }
+    }
+
+    const baseUrl = (apiUrl || 'https://pipeline.trasty.io').replace(/\/+$/, '')
+    const url = `${baseUrl}/v1/journey/events`
+
+    console.log(`[Trasty] sendOrderEvent ${eventName} for order ${orderDetail.orderId}`)
+
+    return this.http.post(url, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': apiKey,
+      },
+    })
+  }
 }

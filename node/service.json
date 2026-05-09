@@ -28,6 +28,10 @@
     "onPaymentApproved": {
       "sender": "vtex.orders-broadcast",
       "topics": ["payment-approved"]
+    },
+    "onInvoiced": {
+      "sender": "vtex.orders-broadcast",
+      "topics": ["invoiced"]
     }
   }
 }
