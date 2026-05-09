@@ -12,7 +12,11 @@ export async function settingsApp(ctx: Context, next: () => Promise<any>) {
 
   console.log(appSettings)
 
-  ctx.body = appSettings
+  // Remove o nó ga4MeasurementProtocolAPI
+  const { ga4MeasurementProtocolAPI, ...filteredSettings } = appSettings
+  console.log(filteredSettings)
+
+  ctx.body = filteredSettings
   ctx.set('Content-Type', 'application/json')
   ctx.set('cache-control', 'no-cache')
 

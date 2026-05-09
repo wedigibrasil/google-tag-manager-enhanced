@@ -11,6 +11,10 @@ export default function() {
 }
 
 export function handleEvents(e: PixelMessage) {
+  if (!e || !e.data || typeof e.data.eventName !== 'string') {
+    return
+  }
+
   sendEnhancedEcommerceEvents(e)
   sendExtraEvents(e)
   sendLegacyEvents(e)
